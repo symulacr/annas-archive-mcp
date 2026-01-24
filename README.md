@@ -63,7 +63,7 @@ To get an API key:
 | Tool | Description | Requires API Key |
 |------|-------------|------------------|
 | `search` | Search for books, papers, magazines, comics, and other documents | No |
-| `get_details` | Get detailed metadata for an item by its MD5 hash | No |
+| `get_details` | Get detailed metadata for an item by its MD5 hash | Yes |
 | `get_download_url` | Get a fast download URL for an item | Yes |
 
 ## License

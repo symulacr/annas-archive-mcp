@@ -1,7 +1,7 @@
 use scraper::{Html, Selector};
 
 use crate::error::Error;
-use crate::types::{ItemDetails, SearchResult};
+use crate::types::SearchResult;
 
 pub fn parse_search_results(html: &str) -> Result<(Vec<SearchResult>, bool), Error> {
     let document = Html::parse_document(html);
@@ -214,116 +214,6 @@ fn parse_pagination_text(text: &str) -> Option<bool> {
     None
 }
 
-pub fn parse_item_details(html: &str, md5: &str) -> Result<ItemDetails, Error> {
-    let document = Html::parse_document(html);
-
-    // Title is typically in a large heading
-    let title_selector =
-        Selector::parse("h1, div.text-3xl, div.text-2xl").map_err(|e| Error::Parse {
-            message: format!("Invalid selector: {e:?}"),
-        })?;
-
-    let title = document
-        .select(&title_selector)
-        .next()
-        .map(|el| el.text().collect::<String>().trim().to_string())
-        .unwrap_or_else(|| "Unknown".to_string());
-
-    // Look for metadata in definition lists or similar structures
-    let mut author = None;
-    let mut format = None;
-    let mut size = None;
-    let mut language = None;
-    let mut publisher = None;
-    let mut year = None;
-    let mut description = None;
-
-    // Try to find metadata table/list
-    let row_selector = Selector::parse("div.flex, tr, dt, dd").map_err(|e| Error::Parse {
-        message: format!("Invalid selector: {e:?}"),
-    })?;
-
-    let mut last_label = String::new();
-
-    for elem in document.select(&row_selector) {
-        let text = elem.text().collect::<String>();
-        let text_lower = text.to_lowercase();
-
-        // Check for common labels
-        if text_lower.contains("author") {
-            last_label = "author".to_string();
-        } else if text_lower.contains("publisher") {
-            last_label = "publisher".to_string();
-        } else if text_lower.contains("year") || text_lower.contains("date") {
-            last_label = "year".to_string();
-        } else if text_lower.contains("language") {
-            last_label = "language".to_string();
-        } else if text_lower.contains("format") || text_lower.contains("extension") {
-            last_label = "format".to_string();
-        } else if text_lower.contains("size") || text_lower.contains("filesize") {
-            last_label = "size".to_string();
-        } else if text_lower.contains("description") || text_lower.contains("about") {
-            last_label = "description".to_string();
-        } else if !last_label.is_empty() && !text.trim().is_empty() {
-            // This might be the value for the last label
-            let value = text.trim().to_string();
-            match last_label.as_str() {
-                "author" if author.is_none() => author = Some(value),
-                "publisher" if publisher.is_none() => publisher = Some(value),
-                "year" if year.is_none() => {
-                    // Extract just the year if present
-                    if let Some(y) = extract_year(&value) {
-                        year = Some(y);
-                    }
-                }
-                "language" if language.is_none() => language = Some(value),
-                "format" if format.is_none() => format = Some(value.to_uppercase()),
-                "size" if size.is_none() => size = Some(value),
-                "description" if description.is_none() => description = Some(value),
-                _ => {}
-            }
-            last_label.clear();
-        }
-    }
-
-    // Try to extract format from filename or URL patterns
-    if format.is_none() {
-        let body_text = document.root_element().text().collect::<String>();
-        for ext in ["pdf", "epub", "mobi", "azw3", "djvu"] {
-            if body_text.to_lowercase().contains(&format!(".{ext}")) {
-                format = Some(ext.to_uppercase());
-                break;
-            }
-        }
-    }
-
-    Ok(ItemDetails {
-        md5: md5.to_string(),
-        title,
-        author,
-        format,
-        size,
-        language,
-        publisher,
-        year,
-        description,
-    })
-}
-
-fn extract_year(text: &str) -> Option<String> {
-    // Look for 4-digit year pattern (1900-2099)
-    for word in text.split_whitespace() {
-        let word = word.trim_matches(|c: char| !c.is_numeric());
-        if word.len() == 4
-            && let Ok(year) = word.parse::<u32>()
-            && (1900..=2099).contains(&year)
-        {
-            return Some(year.to_string());
-        }
-    }
-    None
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -334,12 +224,5 @@ mod tests {
         assert_eq!(format, Some("PDF".to_string()));
         assert_eq!(size, Some("54.2MB".to_string()));
         assert_eq!(language, Some("English [en]".to_string()));
-    }
-
-    #[test]
-    fn test_extract_year() {
-        assert_eq!(extract_year("Published 2023"), Some("2023".to_string()));
-        assert_eq!(extract_year("1987"), Some("1987".to_string()));
-        assert_eq!(extract_year("no year here"), None);
     }
 }
