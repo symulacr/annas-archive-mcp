@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use annas_archive_api::{AnnasArchiveClient, SearchOptions};
 use rmcp::{
-    ServerHandler, tool, tool_router,
+    ServerHandler, tool, tool_router, tool_handler,
     handler::server::{
         router::tool::ToolRouter,
         wrapper::Parameters,
@@ -28,6 +28,7 @@ impl AnnasArchiveServer {
     }
 }
 
+#[tool_handler]
 impl ServerHandler for AnnasArchiveServer {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
