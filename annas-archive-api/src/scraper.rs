@@ -7,20 +7,28 @@ pub fn parse_search_results(html: &str) -> Result<(Vec<SearchResult>, bool), Err
     let document = Html::parse_document(html);
 
     // Select result containers
-    let result_selector = Selector::parse("div.flex.pt-3.pb-3.border-b")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let result_selector =
+        Selector::parse("div.flex.pt-3.pb-3.border-b").map_err(|e| Error::Parse {
+            message: format!("Invalid selector: {e:?}"),
+        })?;
 
-    let link_selector = Selector::parse("a[href^=\"/md5/\"]")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let link_selector = Selector::parse("a[href^=\"/md5/\"]").map_err(|e| Error::Parse {
+        message: format!("Invalid selector: {e:?}"),
+    })?;
 
-    let title_selector = Selector::parse("a.js-vim-focus")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let title_selector = Selector::parse("a.js-vim-focus").map_err(|e| Error::Parse {
+        message: format!("Invalid selector: {e:?}"),
+    })?;
 
-    let metadata_selector = Selector::parse("div.text-gray-800.font-semibold.text-sm")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let metadata_selector =
+        Selector::parse("div.text-gray-800.font-semibold.text-sm").map_err(|e| Error::Parse {
+            message: format!("Invalid selector: {e:?}"),
+        })?;
 
-    let author_icon_selector = Selector::parse("span.icon-\\[mdi--user-edit\\]")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let author_icon_selector =
+        Selector::parse("span.icon-\\[mdi--user-edit\\]").map_err(|e| Error::Parse {
+            message: format!("Invalid selector: {e:?}"),
+        })?;
 
     let mut results = Vec::new();
 
@@ -52,12 +60,7 @@ pub fn parse_search_results(html: &str) -> Result<(Vec<SearchResult>, bool), Err
         let author = result_elem
             .select(&Selector::parse("a").unwrap())
             .find(|a| a.select(&author_icon_selector).next().is_some())
-            .map(|a| {
-                a.text()
-                    .collect::<String>()
-                    .trim()
-                    .to_string()
-            })
+            .map(|a| a.text().collect::<String>().trim().to_string())
             .filter(|s| !s.is_empty());
 
         // Parse metadata line (format · size · language · year)
@@ -98,14 +101,12 @@ fn extract_text_without_scripts(element: scraper::ElementRef) -> String {
         match node.value() {
             Node::Text(t) => {
                 // Check if any ancestor is a script tag
-                let in_script = node
-                    .ancestors()
-                    .any(|ancestor| {
-                        ancestor
-                            .value()
-                            .as_element()
-                            .is_some_and(|el| el.name() == "script")
-                    });
+                let in_script = node.ancestors().any(|ancestor| {
+                    ancestor
+                        .value()
+                        .as_element()
+                        .is_some_and(|el| el.name() == "script")
+                });
 
                 if !in_script {
                     text.push_str(t);
@@ -148,7 +149,18 @@ fn parse_metadata_line(text: &str) -> (Option<String>, Option<String>, Option<St
         // Check if it's a file format
         if matches!(
             part_lower.as_str(),
-            "pdf" | "epub" | "mobi" | "azw3" | "djvu" | "cbr" | "cbz" | "fb2" | "txt" | "doc" | "docx" | "rtf"
+            "pdf"
+                | "epub"
+                | "mobi"
+                | "azw3"
+                | "djvu"
+                | "cbr"
+                | "cbz"
+                | "fb2"
+                | "txt"
+                | "doc"
+                | "docx"
+                | "rtf"
         ) {
             format = Some(part.to_uppercase());
         }
@@ -209,8 +221,10 @@ pub fn parse_item_details(html: &str, md5: &str) -> Result<ItemDetails, Error> {
     let document = Html::parse_document(html);
 
     // Title is typically in a large heading
-    let title_selector = Selector::parse("h1, div.text-3xl, div.text-2xl")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let title_selector =
+        Selector::parse("h1, div.text-3xl, div.text-2xl").map_err(|e| Error::Parse {
+            message: format!("Invalid selector: {e:?}"),
+        })?;
 
     let title = document
         .select(&title_selector)
@@ -228,8 +242,9 @@ pub fn parse_item_details(html: &str, md5: &str) -> Result<ItemDetails, Error> {
     let mut description = None;
 
     // Try to find metadata table/list
-    let row_selector = Selector::parse("div.flex, tr, dt, dd")
-        .map_err(|e| Error::Parse { message: format!("Invalid selector: {e:?}") })?;
+    let row_selector = Selector::parse("div.flex, tr, dt, dd").map_err(|e| Error::Parse {
+        message: format!("Invalid selector: {e:?}"),
+    })?;
 
     let mut last_label = String::new();
 

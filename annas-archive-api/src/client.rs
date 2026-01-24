@@ -4,11 +4,7 @@ use crate::error::Error;
 use crate::scraper::{parse_item_details, parse_search_results};
 use crate::types::{DownloadInfo, ItemDetails, SearchOptions, SearchResponse};
 
-const DOMAINS: &[&str] = &[
-    "annas-archive.org",
-    "annas-archive.se",
-    "annas-archive.li",
-];
+const DOMAINS: &[&str] = &["annas-archive.org", "annas-archive.se", "annas-archive.li"];
 
 pub struct AnnasArchiveClient {
     client: Client,

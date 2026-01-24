@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use annas_archive_api::{AnnasArchiveClient, SearchOptions};
 use rmcp::{
-    ServerHandler, tool, tool_router, tool_handler,
-    handler::server::{
-        router::tool::ToolRouter,
-        wrapper::Parameters,
+    ServerHandler,
+    handler::server::{router::tool::ToolRouter, wrapper::Parameters},
+    model::{
+        CallToolResult, Content, Implementation, ProtocolVersion, ServerCapabilities, ServerInfo,
     },
-    model::{CallToolResult, Content, Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
+    tool, tool_handler, tool_router,
 };
 
 use crate::tools::{DetailsParams, DownloadParams, SearchParams};
@@ -44,8 +44,13 @@ impl ServerHandler for AnnasArchiveServer {
 
 #[tool_router]
 impl AnnasArchiveServer {
-    #[tool(description = "Search Anna's Archive for books, papers, magazines, comics, and other documents")]
-    async fn search(&self, Parameters(params): Parameters<SearchParams>) -> Result<CallToolResult, rmcp::ErrorData> {
+    #[tool(
+        description = "Search Anna's Archive for books, papers, magazines, comics, and other documents"
+    )]
+    async fn search(
+        &self,
+        Parameters(params): Parameters<SearchParams>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
         let options = SearchOptions::new(&params.query);
         let options = if let Some(page) = params.page {
             options.with_page(page)
@@ -55,8 +60,9 @@ impl AnnasArchiveServer {
 
         match self.client.search(options).await {
             Ok(response) => {
-                let json = serde_json::to_string_pretty(&response)
-                    .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None))?;
+                let json = serde_json::to_string_pretty(&response).map_err(|e| {
+                    rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None)
+                })?;
                 Ok(CallToolResult::success(vec![Content::text(json)]))
             }
             Err(e) => Ok(CallToolResult::error(vec![Content::text(format!(
@@ -66,11 +72,15 @@ impl AnnasArchiveServer {
     }
 
     #[tool(description = "Get detailed metadata for an item by its MD5 hash")]
-    async fn get_details(&self, Parameters(params): Parameters<DetailsParams>) -> Result<CallToolResult, rmcp::ErrorData> {
+    async fn get_details(
+        &self,
+        Parameters(params): Parameters<DetailsParams>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
         match self.client.get_details(&params.md5).await {
             Ok(details) => {
-                let json = serde_json::to_string_pretty(&details)
-                    .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None))?;
+                let json = serde_json::to_string_pretty(&details).map_err(|e| {
+                    rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None)
+                })?;
                 Ok(CallToolResult::success(vec![Content::text(json)]))
             }
             Err(e) => Ok(CallToolResult::error(vec![Content::text(format!(
@@ -79,16 +89,22 @@ impl AnnasArchiveServer {
         }
     }
 
-    #[tool(description = "Get a fast download URL for an item (requires ANNAS_ARCHIVE_API_KEY environment variable)")]
-    async fn get_download_url(&self, Parameters(params): Parameters<DownloadParams>) -> Result<CallToolResult, rmcp::ErrorData> {
+    #[tool(
+        description = "Get a fast download URL for an item (requires ANNAS_ARCHIVE_API_KEY environment variable)"
+    )]
+    async fn get_download_url(
+        &self,
+        Parameters(params): Parameters<DownloadParams>,
+    ) -> Result<CallToolResult, rmcp::ErrorData> {
         match self
             .client
             .get_download_url(&params.md5, params.path_index, params.domain_index)
             .await
         {
             Ok(info) => {
-                let json = serde_json::to_string_pretty(&info)
-                    .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None))?;
+                let json = serde_json::to_string_pretty(&info).map_err(|e| {
+                    rmcp::ErrorData::internal_error(format!("Serialize error: {e}"), None)
+                })?;
                 Ok(CallToolResult::success(vec![Content::text(json)]))
             }
             Err(e) => Ok(CallToolResult::error(vec![Content::text(format!(
