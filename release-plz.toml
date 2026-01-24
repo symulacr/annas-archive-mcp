@@ -1,0 +1,30 @@
+# release-plz configuration
+# https://release-plz.ieni.dev/docs/config
+
+[workspace]
+changelog_update = true
+git_release_enable = true
+git_tag_enable = true
+publish = true
+semver_check = true
+
+# Ignore release-plz's own commits
+release_commits = "^(chore|release)"
+
+[changelog]
+# Skip CI/docs/chore commits from changelog
+commit_parsers = [
+    { message = "^chore", skip = true },
+    { message = "^ci", skip = true },
+    { message = "^docs", skip = true },
+    { message = "^style", skip = true },
+    { message = "^release", skip = true },
+]
+
+[[package]]
+name = "annas-archive-api"
+publish = true
+
+[[package]]
+name = "annas-archive-mcp"
+publish = true

@@ -1,0 +1,9 @@
+[procMacro]
+enable = true
+attributes.enable = true
+
+[cargo]
+buildScripts.enable = true
+
+[diagnostics]
+experimental.enable = true
