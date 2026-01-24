@@ -28,28 +28,6 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
     "annas-archive": {
       "command": "annas-archive-mcp",
       "env": {
-        "PATH": "${HOME}/.cargo/bin:${PATH}"
-      }
-    }
-  }
-}
-```
-
-### With API Key
-
-The `get_download_url` tool requires an API key with fast download access. Without it, only `search` and `get_details` are functional.
-
-To get an API key:
-1. Create an account on [annas-archive.li](https://annas-archive.li)
-2. Your API key is your "Secret key" (the key you use to log in)
-3. Go to the [donate page](https://annas-archive.li/donate) to get access to fast downloads
-
-```json
-{
-  "mcpServers": {
-    "annas-archive": {
-      "command": "annas-archive-mcp",
-      "env": {
         "PATH": "${HOME}/.cargo/bin:${PATH}",
         "ANNAS_ARCHIVE_API_KEY": "your-api-key"
       }
@@ -57,6 +35,11 @@ To get an API key:
   }
 }
 ```
+
+**Getting an API key:**
+1. Create an account on [annas-archive.li](https://annas-archive.li)
+2. Your API key is your "Secret key" (the key you use to log in)
+3. Go to the [donate page](https://annas-archive.li/donate) to get access to fast downloads
 
 ## Available Tools
 
