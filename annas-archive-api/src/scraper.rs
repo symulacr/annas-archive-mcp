@@ -98,21 +98,18 @@ fn extract_text_without_scripts(element: scraper::ElementRef) -> String {
     let mut text = String::new();
 
     for node in element.descendants() {
-        match node.value() {
-            Node::Text(t) => {
-                // Check if any ancestor is a script tag
-                let in_script = node.ancestors().any(|ancestor| {
-                    ancestor
-                        .value()
-                        .as_element()
-                        .is_some_and(|el| el.name() == "script")
-                });
+        if let Node::Text(t) = node.value() {
+            // Check if any ancestor is a script tag
+            let in_script = node.ancestors().any(|ancestor| {
+                ancestor
+                    .value()
+                    .as_element()
+                    .is_some_and(|el| el.name() == "script")
+            });
 
-                if !in_script {
-                    text.push_str(t);
-                }
+            if !in_script {
+                text.push_str(t);
             }
-            _ => {}
         }
     }
 
