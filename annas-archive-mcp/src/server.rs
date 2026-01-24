@@ -15,6 +15,7 @@ use crate::tools::{DetailsParams, DownloadParams, SearchParams};
 #[derive(Clone)]
 pub struct AnnasArchiveServer {
     client: Arc<AnnasArchiveClient>,
+    #[allow(dead_code)] // Used by #[tool_router] macro
     tool_router: ToolRouter<Self>,
 }
 
