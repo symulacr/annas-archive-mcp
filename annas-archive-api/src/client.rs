@@ -504,9 +504,11 @@ fn parse_string_list_from_object(value: Option<&serde_json::Value>) -> Option<Ve
         if let Some(arr) = val.as_array() {
             for item in arr {
                 if let Some(s) = item.as_str()
-                    && !s.is_empty() && !result.contains(&s.to_string()) {
-                        result.push(s.to_string());
-                    }
+                    && !s.is_empty()
+                    && !result.contains(&s.to_string())
+                {
+                    result.push(s.to_string());
+                }
             }
         }
     }
