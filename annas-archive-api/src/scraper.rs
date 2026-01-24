@@ -61,10 +61,12 @@ pub fn parse_search_results(html: &str) -> Result<(Vec<SearchResult>, bool), Err
             .filter(|s| !s.is_empty());
 
         // Parse metadata line (format · size · language · year)
+        // Note: The metadata div contains inline <script> tags, so we must only
+        // collect text from non-script elements to avoid capturing JS code
         let metadata_text = result_elem
             .select(&metadata_selector)
             .next()
-            .map(|div| div.text().collect::<String>())
+            .map(|div| extract_text_without_scripts(div))
             .unwrap_or_default();
 
         let (format, size, language) = parse_metadata_line(&metadata_text);
@@ -85,6 +87,54 @@ pub fn parse_search_results(html: &str) -> Result<(Vec<SearchResult>, bool), Err
     Ok((results, has_more))
 }
 
+/// Extracts text from an element while skipping <script> tags.
+/// This is necessary because Anna's Archive embeds inline scripts in metadata divs.
+fn extract_text_without_scripts(element: scraper::ElementRef) -> String {
+    use scraper::Node;
+
+    let mut text = String::new();
+
+    for node in element.descendants() {
+        match node.value() {
+            Node::Text(t) => {
+                // Check if any ancestor is a script tag
+                let in_script = node
+                    .ancestors()
+                    .any(|ancestor| {
+                        ancestor
+                            .value()
+                            .as_element()
+                            .is_some_and(|el| el.name() == "script")
+                    });
+
+                if !in_script {
+                    text.push_str(t);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    text
+}
+
+/// Checks if a string looks like a file size (e.g., "6.4MB", "512KB", "1.2GB")
+fn is_file_size(s: &str) -> bool {
+    let s = s.trim().to_lowercase();
+
+    // Must end with a size unit
+    let units = ["gb", "mb", "kb", "b"];
+    let Some(unit) = units.iter().find(|u| s.ends_with(*u)) else {
+        return false;
+    };
+
+    // Get the part before the unit
+    let number_part = &s[..s.len() - unit.len()];
+
+    // Must have some digits before the unit
+    number_part.chars().any(|c| c.is_ascii_digit())
+}
+
 fn parse_metadata_line(text: &str) -> (Option<String>, Option<String>, Option<String>) {
     let parts: Vec<&str> = text.split('·').map(|s| s.trim()).collect();
 
@@ -102,12 +152,9 @@ fn parse_metadata_line(text: &str) -> (Option<String>, Option<String>, Option<St
         ) {
             format = Some(part.to_uppercase());
         }
-        // Check if it's a size (ends with B, KB, MB, GB)
-        else if part_lower.ends_with("mb")
-            || part_lower.ends_with("kb")
-            || part_lower.ends_with("gb")
-            || part_lower.ends_with('b')
-        {
+        // Check if it's a size (number followed by B, KB, MB, GB)
+        // Must have a digit before the unit to avoid matching things like "zlib"
+        else if is_file_size(&part_lower) {
             size = Some(part.to_string());
         }
         // Check if it contains language code like "[en]"
