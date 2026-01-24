@@ -8,8 +8,8 @@ git_tag_enable = true
 publish = true
 semver_check = true
 
-# Ignore release-plz's own commits
-release_commits = "^(chore|release)"
+# Include conventional commit types that should trigger releases
+release_commits = "^(feat|fix|perf|refactor|build)"
 
 [changelog]
 # Skip CI/docs/chore commits from changelog
