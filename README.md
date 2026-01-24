@@ -26,15 +26,23 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 {
   "mcpServers": {
     "annas-archive": {
-      "command": "annas-archive-mcp"
+      "command": "annas-archive-mcp",
+      "env": {
+        "PATH": "${HOME}/.cargo/bin:${PATH}"
+      }
     }
   }
 }
 ```
 
-### With API Key (optional)
+### With API Key
 
-For fast download URLs, set your API key:
+The `get_download_url` tool requires an API key with fast download access. Without it, only `search` and `get_details` are functional.
+
+To get an API key:
+1. Create an account on [annas-archive.li](https://annas-archive.li)
+2. Your API key is your "Secret key" (the key you use to log in)
+3. Go to the [donate page](https://annas-archive.li/donate) to get access to fast downloads
 
 ```json
 {
@@ -42,6 +50,7 @@ For fast download URLs, set your API key:
     "annas-archive": {
       "command": "annas-archive-mcp",
       "env": {
+        "PATH": "${HOME}/.cargo/bin:${PATH}",
         "ANNAS_ARCHIVE_API_KEY": "your-api-key"
       }
     }
@@ -51,33 +60,11 @@ For fast download URLs, set your API key:
 
 ## Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `search` | Search Anna's Archive for books, papers, magazines, comics, and other documents |
-| `get_details` | Get detailed metadata for an item by its MD5 hash |
-| `get_download_url` | Get a fast download URL for an item (requires API key) |
-
-## Library Usage
-
-The `annas-archive-api` crate can be used independently:
-
-```rust
-use annas_archive_api::{AnnasArchiveClient, SearchOptions};
-
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let client = AnnasArchiveClient::new(None);
-
-    let options = SearchOptions::new("rust programming");
-    let results = client.search(options).await?;
-
-    for item in results.results {
-        println!("{} - {}", item.title, item.format.unwrap_or_default());
-    }
-
-    Ok(())
-}
-```
+| Tool | Description | Requires API Key |
+|------|-------------|------------------|
+| `search` | Search for books, papers, magazines, comics, and other documents | No |
+| `get_details` | Get detailed metadata for an item by its MD5 hash | No |
+| `get_download_url` | Get a fast download URL for an item | Yes |
 
 ## License
 
