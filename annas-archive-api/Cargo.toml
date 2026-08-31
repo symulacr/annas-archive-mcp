@@ -8,11 +8,17 @@ repository = "https://github.com/RemiKalbe/annas-archive-mcp"
 keywords = ["annas-archive", "books", "library", "api"]
 categories = ["api-bindings"]
 
+# Binary size note: symbols are stripped workspace-wide via the root
+# [profile.release] (strip = "symbols"), which is where the setting is honored.
+# panic="abort" evaluated and REJECTED — consumer-visible behavior change
+# (research/api-url-rlib-fixes.md §3).
 [dependencies]
-reqwest = { version = "0.13.1", features = ["json", "cookies", "form"] }
-scraper = "0.25.0"
+reqwest = { version = "0.13.4", features = ["json", "cookies", "form", "gzip", "brotli", "hickory-dns"] }
+itoa = "1"
+# Maintained fork of y21/tl (parser-loop fix #16, SIMD identifier search #12).
+# "0.7" is safe: upstream is actively maintained; the lockfile pins the exact version.
+astral_tl = { package = "astral-tl", version = "0.7" }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "2.0"
-tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
-urlencoding = "2.1"
+serde_json = { version = "1.0", features = ["raw_value"] }
+# "net"/"io-util" power the local mock CT server in tests/discovery_tests.rs.
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "net", "io-util"] }

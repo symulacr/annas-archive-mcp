@@ -1,1 +1,97 @@
+# ============================================================
+# Build artifacts (Cargo)
+# ============================================================
 /target
+/debug
+
+# Rust intermediates
+*.rlib
+*.rmeta
+*.d
+
+# Native libs & executables (cross-platform build output)
+*.dll
+*.dylib
+*.exe
+*.so
+
+# MSVC/Windows debugging info
+*.pdb
+
+# Profiling / benchmark output
+*.profraw
+cargo-timing*.html
+
+# rustfmt backup / mutation testing / ICE dumps
+**/*.rs.bk
+**/mutants.out*/
+mutants.out*
+rustc-ice-*.txt
+
+# ============================================================
+# Test/CI generated artifacts
+# ============================================================
+nextest-report.xml
+/annas-archive-api/tests/live-budget.json
+
+# ============================================================
+# Logs
+# ============================================================
+*.log
+
+# ============================================================
+# Release/deploy artifacts
+# ============================================================
+*.deb
+*.rpm
+*.tar.gz
+
+# ============================================================
+# Secrets & local-only config
+# ============================================================
+.env
+.env.*
+.cargo/config.local.toml
+Cargo.lock.lock
+
+# ============================================================
+# Project policy — untracked directories/files
+# ============================================================
+# Research/lab scratch (campaign artifacts live in ../research/, not the repo)
+/research
+
+# Tests — untracked (live locally; recovery via git history at cycle-21/R1 tags)
+/tests
+/annas-archive-mcp/tests
+
+# Examples
+/annas-archive-api/examples
+
+# Config/docs/CI — untracked per project policy (README excluded: tracked, it's the repo front page)
+/annas-archive-api/CHANGELOG.md
+/annas-archive-mcp/CHANGELOG.md
+/release-plz.toml
+/rust-analyzer.toml
+/.github
+/.config
+
+# ============================================================
+# Editor noise & backups
+# ============================================================
+\#*\#
+*~
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*.tmp
+
+# ============================================================
+# OS noise (macOS / Windows / Linux desktop)
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.directory
+.Trash-*
