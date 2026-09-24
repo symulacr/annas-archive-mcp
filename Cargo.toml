@@ -1,3 +1,16 @@
 [workspace]
 resolver = "2"
 members = ["annas-archive-api", "annas-archive-mcp"]
+
+# Test-only profile: release semantics, third-party deps at opt-level=1 for a
+# ~39% faster cold compile (122s→74s measured, cycle-19/P3). Workspace crates
+# stay at release opt-level; production `--release` builds are unaffected.
+# Run with: cargo test --workspace --profile testfast (or nextest --profile testfast).
+[profile.testfast]
+inherits = "release"
+
+[profile.testfast.package."*"]
+opt-level = 1
+
+[profile.release]
+strip = "symbols"
